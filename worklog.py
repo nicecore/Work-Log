@@ -1,6 +1,6 @@
 import csv
 import os
-from datetime import datetime
+import datetime
 # import
 
 # Work Log, a Treehouse Tech Degree Project by Adam Cameron
@@ -27,8 +27,7 @@ def new_entry():
         task_name = input(
 """***NEW ENTRY***
 
-Please enter the name of the task performed:\n> 
-""")
+Please enter the name of the task performed:\n> """)
         # Prompt user for time spent on {}.format(task_name)
         c_s()
         notnumber = True
@@ -37,8 +36,8 @@ Please enter the name of the task performed:\n>
             time_spent = input(
 """***NEW ENTRY***
 
-Please enter the number of minutes spent on task "{}":\n> 
-""".format(task_name))
+Please enter the number of minutes spent on task "{}":
+> """.format(task_name))
             try:
                 time_spent = int(time_spent)
             except ValueError:
@@ -47,8 +46,8 @@ Please enter the number of minutes spent on task "{}":\n>
                 time_spent = input(
 """***NEW ENTRY***
 
-Please enter the number of minutes spent on task "{}":\n>
-""".format(task_name))
+Please enter the number of minutes spent on task "{}":
+> """.format(task_name))
             else:
                 notnumber = False
         # Prompt user to input notes about task
@@ -56,12 +55,13 @@ Please enter the number of minutes spent on task "{}":\n>
         notes = input(
 """***NEW ENTRY***
 
-Please enter any relevant notes about task "{}":\n> 
-""".format(task_name))
-
+Please enter any relevant notes about task "{}":
+> """.format(task_name))
+        entry_datetime = datetime.datetime.now()
+        date_fmt = entry_datetime.strftime('%m/%d/%Y @ %-I:%M %p')
         with open("worklog.csv", "a", newline="") as file:
             filewriter = csv.writer(file)
-            filewriter.writerow([task_name, time_spent, notes])
+            filewriter.writerow([date_fmt, task_name, time_spent, notes])
 
         c_s()
         unchosen = True
@@ -69,7 +69,7 @@ Please enter any relevant notes about task "{}":\n>
             another_entry = input(
 """Would you like to make another entry in the work log?
 Please enter Y for YES or N for NO.
-""").lower()
+> """).lower()
             if another_entry == 'y' or another_entry == 'yes':
                 unchosen = False
                 c_s()
@@ -78,13 +78,6 @@ Please enter Y for YES or N for NO.
                 still_entering = False
                 c_s()
                 main()
-
-    # Write these to a line on the CSV file separated by commas
-    # Upon successfully writing inputs to a line of CSV file,
-    # ask if user wants to make another entry
-    # If not, return user to initial prompt
-
-
 
 ##########################################################################
 
@@ -117,27 +110,28 @@ def search_plain():
             print("Search results for phrase '{}':\n".format(plain_search))
             results = []
             for row in file_reader:
-                task, time, notes = row
+                date, task, time, notes = row
                 for field in row:
                     if plain_search in field:
                         results.append(plain_search)
-                        print("- {}, {} minutes: {}".format(task, time, notes))
+                        print("-{} - {}, {} minutes: {}".format(date, task, time, notes))
                     elif plain_search.lower() in field:
                         results.append(plain_search)
-                        print("- {}, {} minutes: {}".format(task, time, notes))
+                        print("-{} - {}, {} minutes: {}".format(date, task, time, notes))
                     elif plain_search.upper() in field:
                         results.append(plain_search)
-                        print("- {}, {} minutes: {}".format(task, time, notes))
+                        print("-{} - {}, {} minutes: {}".format(date, task, time, notes))
                     elif plain_search.capitalize() in field:
                         results.append(plain_search)
-                        print("- {}, {} minutes: {}".format(task, time, notes))
+                        print("-{} - {}, {} minutes: {}".format(date, task, time, notes))
             if len(results) == 0:
                 print("There were no results!")
 
             search_again = input(
 """\nWould you like to do another search?
 
-Please press any key and ENTER if YES, and N if NO:\n> """).lower()
+Please press ENTER if YES, and N and ENTER if NO:
+> """).lower()
             if search_again == 'n' or search_again == 'no':
                 searching = False
                 c_s()
@@ -151,10 +145,35 @@ Please press any key and ENTER if YES, and N if NO:\n> """).lower()
 
 
 def search_date():
-    # Allow user to search by date
-    pass
+    c_s()
+    searching = True
+    while searching:
+        with open("worklog.csv", "r") as file:
+            file_reader = csv.reader(file)
+            date_search = input(
+"""Please enter a date to search in MM/DD/YYYY format:
+> """)
+            results = []
+            for row in file_reader:
+                date, task, time, notes = row
+                if date_search in date:
+                    results.append(date)
+                    print("-{} - {}, {} minutes: {}".format(date, task, time, notes))
+            if len(results) == 0:
+                print("There were no results!")
 
+            search_again = input(
+"""\nWould you like to do another search?
 
+Please press ENTER if YES, and N and ENTER if NO:
+> """).lower()
+            if search_again == 'n' or search_again == 'no':
+                searching = False
+                c_s()
+                main()
+            else:
+                c_s()
+                searching = True
 
 
 
@@ -162,14 +181,15 @@ def search_date():
 
 def show_all_entries():
     c_s()
-    print("Here are all your entries.\n")
-    print("The format is [TASK], [TIME] minutes: [NOTES]\n")
+    print("Here are all your entries, starting with the most recent.\n")
+    print("The format is [DATE and TIME] - [TASK], [TIME] minutes: [NOTES]\n")
     with open("worklog.csv", "r") as file:
         file_reader = csv.reader(file)
         next(file_reader)
-        for row in file_reader:
-            name, time, notes = row
-            print("{}, {} minutes: {}".format(name, time, notes))
+        lines = [x for x in file_reader]
+        for row in lines[::-1]:
+            date, name, time, notes = row
+            print("{} - {}, {} minutes: {}".format(date, name, time, notes))
     input("\n\nPress ENTER to return to the main prompt...")
     main()
 
@@ -178,8 +198,13 @@ def show_all_entries():
 
 def main():
     c_s()
-    choice = input("""
-Welcome, wage slave!
+    choosing = True
+    while choosing:
+        c_s()
+        choice = input("""
+Welcome, wage slave! Keep reaching for that rainbow!
+
+This work log has been provided to you by your benevolent masters.
 
 Please type one of the options below and hit ENTER.
 
@@ -187,18 +212,27 @@ Please type one of the options below and hit ENTER.
 [b] See all work log entries
 [c] Search work log with plain text
 [d] Search work log with regular expression
+[e] Search work log by date
 
-To cancel a new entry or a search, enter BACK
-at any point during your session to return to this prompt.
-
-""").lower()
-    if choice == 'a':
-        new_entry()
-    elif choice == 'b':
-        show_all_entries()
-    elif choice == 'c':
-        search_plain()
-
+> """).lower()
+        if choice == 'a':
+            choosing = False
+            new_entry()
+        elif choice == 'b':
+            choosing = False
+            show_all_entries()
+        elif choice == 'c':
+            choosing = False
+            search_plain()
+        elif choice == 'd':
+            choosing = False
+            search_regex()
+        elif choice == 'e':
+            choosing = False
+            search_date()
+        else:
+            c_s()
+            input("That's not a valid choice! Press ENTER to try again...")
 
 
 main()
