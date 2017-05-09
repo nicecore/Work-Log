@@ -10,16 +10,15 @@ from datetime import datetime
 # Open CSV file and create CSV object outside of functions?
 
 
-##########################################################################
-def clear_screen():
-    """Clear screen"""
+def c_s():
+    """Clear screen function"""
     os.system('cls' if os.name == 'nt' else 'clear')
 
 ##########################################################################
 
 def new_entry():
 
-    clear_screen()
+    c_s()
     still_entering = True
     while still_entering:
         
@@ -31,29 +30,29 @@ def new_entry():
 Please enter the name of the task performed:\n> 
 """)
         # Prompt user for time spent on {}.format(task_name)
-        clear_screen()
+        c_s()
         notnumber = True
         # While block with try/except to make sure user enters an integer
         while notnumber:
             time_spent = input(
 """***NEW ENTRY***
 
-Please enter the amount of time spent on task "{}", in minutes:\n> 
+Please enter the number of minutes spent on task "{}":\n> 
 """.format(task_name))
             try:
                 time_spent = int(time_spent)
             except ValueError:
-                clear_screen()
+                c_s()
                 input("You need to enter a number! Please press ENTER to try again...")
                 time_spent = input(
 """***NEW ENTRY***
 
-Please enter the amount of time spent on task "{}", in minutes
+Please enter the number of minutes spent on task "{}":\n>
 """.format(task_name))
             else:
                 notnumber = False
         # Prompt user to input notes about task
-        clear_screen()
+        c_s()
         notes = input(
 """***NEW ENTRY***
 
@@ -64,7 +63,7 @@ Please enter any relevant notes about task "{}":\n>
             filewriter = csv.writer(file)
             filewriter.writerow([task_name, time_spent, notes])
 
-        clear_screen()
+        c_s()
         unchosen = True
         while unchosen:
             another_entry = input(
@@ -73,11 +72,12 @@ Please enter Y for YES or N for NO.
 """).lower()
             if another_entry == 'y' or another_entry == 'yes':
                 unchosen = False
-                clear_screen()
+                c_s()
             elif another_entry == 'n' or another_entry == 'no':
                 unchosen = False
                 still_entering = False
-                clear_screen()
+                c_s()
+                main()
 
     # Write these to a line on the CSV file separated by commas
     # Upon successfully writing inputs to a line of CSV file,
@@ -89,7 +89,7 @@ Please enter Y for YES or N for NO.
 ##########################################################################
 
 def search_regex():
-    with open("worklog.csv") as file:
+    with open("worklog.csv", "r") as file:
         file_reader = csv.reader(file)
         reg_search = input(
 """Please enter a regular expression to be searched:\n> 
@@ -106,28 +106,78 @@ def search_regex():
 
 
 def search_plain():
-    with open("worklog.csv") as file:
-        file_reader = csv.reader(file)
+    c_s()
+    searching = True
+    while searching:
+        with open("worklog.csv", "r") as file:
+            file_reader = csv.reader(file)
+            plain_search = input(
+"""Please enter a word or phrase to search:\n> """)
+            c_s()
+            print("Search results for phrase '{}':\n".format(plain_search))
+            results = []
+            for row in file_reader:
+                task, time, notes = row
+                for field in row:
+                    if plain_search in field:
+                        results.append(plain_search)
+                        print("- {}, {} minutes: {}".format(task, time, notes))
+                    elif plain_search.lower() in field:
+                        results.append(plain_search)
+                        print("- {}, {} minutes: {}".format(task, time, notes))
+                    elif plain_search.upper() in field:
+                        results.append(plain_search)
+                        print("- {}, {} minutes: {}".format(task, time, notes))
+                    elif plain_search.capitalize() in field:
+                        results.append(plain_search)
+                        print("- {}, {} minutes: {}".format(task, time, notes))
+            if len(results) == 0:
+                print("There were no results!")
 
-        plain_search = input(
-"""Please enter a word or phrase to be searched
-""")
-        # Prompt user for a string to search from
-        # Search CSV file for a line containing the string
-        # Print out entire line to user, press ENTER to continue
-        # Ask if user wants to do another regex search
-        # IF not, return user to initial prompt
-        pass
+            search_again = input(
+"""\nWould you like to do another search?
+
+Please press any key and ENTER if YES, and N if NO:\n> """).lower()
+            if search_again == 'n' or search_again == 'no':
+                searching = False
+                c_s()
+                main()
+            else:
+                c_s()
+                searching = True
 
 
 ##########################################################################
 
 
-# Show intro text, which only gets displayed once, outside of main loop
-# Press enter to continue -> leads to def main():
+def search_date():
+    # Allow user to search by date
+    pass
+
+
+
+
+
+##########################################################################
+
+def show_all_entries():
+    c_s()
+    print("Here are all your entries.\n")
+    print("The format is [TASK], [TIME] minutes: [NOTES]\n")
+    with open("worklog.csv", "r") as file:
+        file_reader = csv.reader(file)
+        next(file_reader)
+        for row in file_reader:
+            name, time, notes = row
+            print("{}, {} minutes: {}".format(name, time, notes))
+    input("\n\nPress ENTER to return to the main prompt...")
+    main()
+
+##########################################################################
+
 
 def main():
-    clear_screen()
+    c_s()
     choice = input("""
 Welcome, wage slave!
 
@@ -144,6 +194,11 @@ at any point during your session to return to this prompt.
 """).lower()
     if choice == 'a':
         new_entry()
+    elif choice == 'b':
+        show_all_entries()
+    elif choice == 'c':
+        search_plain()
+
+
 
 main()
-
