@@ -1,10 +1,10 @@
 import csv
 import os
 import datetime
-# import
+import re
 
-# Work Log, a Treehouse Tech Degree Project by Adam Cameron
-# May 2017
+# Work Log, a Treehouse Tech Degree Project 
+# by Adam Cameron, May 2017
 
 
 # Open CSV file and create CSV object outside of functions?
@@ -82,18 +82,39 @@ Please enter Y for YES or N for NO.
 ##########################################################################
 
 def search_regex():
-    with open("worklog.csv", "r") as file:
-        file_reader = csv.reader(file)
-        reg_search = input(
-"""Please enter a regular expression to be searched:\n> 
-""")
-        # Prompt user for a regular expression
-        # Search CSV file for a line containing regular expression
-        # Print line out to user, press ENTER to continue
-        # Ask if user wants to do another regex search
-        # If not, return user to initial prompt
-        pass
+    c_s()
+    searching = True
+    while searching:
+        with open("worklog.csv", "r") as file:
+            file_reader = csv.reader(file)
+            reg_search = input(
+"""Please enter a regular expression to be searched:
+> """)
+            if reg_search:
+                p = re.compile(reg_search, re.IGNORECASE)
+                next(file_reader)
+                print("Search results for regex '{}':\n".format(reg_search))
+                for row in file_reader:
+                    date, task, time, notes = row
+                    for field in row:
+                        if re.search(p, field):
+                            print("-{} - {}, {} minutes: {}".format(date, task, time, notes))
+            else:
+                c_s()
+                input("Please enter a regular expression! Press ENTER to start over...")
+                c_s()
+            search_again = input(
+"""\nWould you like to do another search?
 
+Please press ENTER if YES, and N and ENTER if NO:
+> """).lower()
+            if search_again == 'n' or search_again == 'no':
+                searching = False
+                c_s()
+                main()
+            else:
+                c_s()
+                searching = True
 
 ##########################################################################
 
@@ -175,13 +196,41 @@ Please press ENTER if YES, and N and ENTER if NO:
                 c_s()
                 searching = True
 
+##########################################################################
+
+def search_minutes():
+    c_s()
+    searching = True
+    minute = input("Please enter the number of minutes you wish to search:\n> ")
+    while searching:
+        with open("worklog.csv", "r") as file:
+            file_reader = csv.reader(file)
+            c_s()
+            print("Search results for time '{}' minutes:\n".format(minute))
+            for row in file_reader:
+                date, task, time, notes = row
+                if row[2] == minute:
+                    print("-{} - {}, {} minutes: {}".format(date, task, time, notes))
+            search_again = input(
+"""\nWould you like to do another search?
+
+Please press ENTER if YES, and N and ENTER if NO:
+> """).lower()
+            if search_again == 'n' or search_again == 'no':
+                searching = False
+                c_s()
+                main()
+            else:
+                c_s()
+                searching = True
+
 
 
 ##########################################################################
 
 def show_all_entries():
     c_s()
-    print("Here are all your entries, starting with the most recent.\n")
+    print("Here are all your entries, beginning with the most recent:\n")
     print("The format is [DATE and TIME] - [TASK], [TIME] minutes: [NOTES]\n")
     with open("worklog.csv", "r") as file:
         file_reader = csv.reader(file)
@@ -213,6 +262,7 @@ Please type one of the options below and hit ENTER.
 [c] Search work log with plain text
 [d] Search work log with regular expression
 [e] Search work log by date
+[f] Search work log by time spent
 
 > """).lower()
         if choice == 'a':
@@ -230,6 +280,9 @@ Please type one of the options below and hit ENTER.
         elif choice == 'e':
             choosing = False
             search_date()
+        elif choice == 'f':
+            choosing = False
+            search_minutes()
         else:
             c_s()
             input("That's not a valid choice! Press ENTER to try again...")

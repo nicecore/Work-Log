@@ -1,19 +1,12 @@
-notnumber = True
-while notnumber:
-    time_spent = input(
-"""***NEW ENTRY***
+import re
+import csv
 
-Please enter the amount of time spent on the task, in minutes:\n> 
-""")
-    try:
-        time_spent = int(time_spent)
-    except ValueError:
-        # clear_screen()
-        input("You need to enter a number! Please press ENTER to try again...")
-        time_spent = input(
-"""***NEW ENTRY***
+match = '\wo\w'
 
-Please enter the amount of time spent on the task, in minutes
-""")
-    else:
-        notnumber = False
+with open("worklog.csv", "r") as file:
+    data = csv.reader(file)
+    next(data)
+    for row in data:
+        for field in row:
+            if re.search(match, field):
+                print(row)
