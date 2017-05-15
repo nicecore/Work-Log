@@ -21,9 +21,16 @@ def reader():
 def printer(results, search):
     """Print out results of a search"""
     c_s()
-    print("titles for {}".format(search)) # Format 'search' here to show what the user searched
-    for i in results:
-        print(', '.join(i))
+    print("Results for {}:\n".format(search))
+    for row in results:
+        date, task, mins, notes = row
+        print("""Date and time: {}
+Task name: {}
+Minutes spent: {}
+Notes: {}
+
+----------------------
+""".format(date, task, mins, notes))
 
 def writer(date, time, task, notes):
     """Write user input to CSV file as a new row"""
@@ -174,7 +181,8 @@ def search_plain():
                 searching = True
         else:
             c_s()
-            input("Please enter a plain text phrase! Press ENTER to start over...")
+            input(
+"""Please enter a plain text phrase! Press ENTER to start over...""")
             c_s()
 
 
@@ -232,10 +240,11 @@ def search_minutes():
 def show_all_entries():
     """Display all work log entries"""
     c_s()
-    print("Here are all your entries, beginning with the most recent:\n")
-    print("The format is [DATE and TIME] - [TASK], [TIME] minutes: [NOTES]\n")
+    search = "ALL ENTRIES"
+    results = []
     for row in reader()[::-1]:
-        print(', '.join(row))
+        results.append(row)
+    printer(results, search)
     input("\n\nPress ENTER to return to the main prompt...")
     main()
 
